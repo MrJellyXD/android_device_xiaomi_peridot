@@ -75,7 +75,6 @@ rw_dir_file(hal_power_default, sysfs_thermal)
 allow hal_power_default sysfs_thermal:dir r_dir_perms;
 allow hal_power_default sysfs_thermal:file rw_file_perms;
 allow hal_power_default sysfs_thermal:lnk_file r_file_perms;
-allow hal_power_default vendor_sysfs_msm_perf:file rw_file_perms;
 
 # Allow read/write to SDA
 allow hal_power_default vendor_sysfs_sd:file rw_file_perms;
