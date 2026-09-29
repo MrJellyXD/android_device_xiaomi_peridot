@@ -477,3 +477,7 @@ PRODUCT_COPY_FILES += \
 
 # Vendor
 $(call inherit-product, vendor/xiaomi/peridot/peridot-vendor.mk)
+
+#Viper4Android
+$(call inherit-product, packages/apps/ViPER4AndroidFX/config.mk)
+
