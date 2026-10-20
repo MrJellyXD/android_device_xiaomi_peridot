@@ -281,4 +281,4 @@ include vendor/xiaomi/peridot/BoardConfigVendor.mk
 -include device/xiaomi/peridot-miuicamera/BoardConfig.mk
 
 # NotGameTurbo
-include packages/apps/NotGameTurbo/BoardConfig.mk
+-include packages/apps/NotGameTurbo/BoardConfig.mk
