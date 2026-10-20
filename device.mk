@@ -492,10 +492,10 @@ PRODUCT_COPY_FILES += \
 $(call inherit-product, vendor/xiaomi/peridot/peridot-vendor.mk)
 
 #Viper4Android
-$(call inherit-product, packages/apps/ViPER4AndroidFX/config.mk)
+$(call inherit-product-if-exists, packages/apps/ViPER4AndroidFX/config.mk)
 
 # Vendor MiuiCamera
 $(call inherit-product-if-exists, device/xiaomi/peridot-miuicamera/device.mk)
 
 # NotGameTurbo
-$(call inherit-product, packages/apps/NotGameTurbo/notgameturbo.mk)
+$(call inherit-product-if-exists, packages/apps/NotGameTurbo/notgameturbo.mk)
