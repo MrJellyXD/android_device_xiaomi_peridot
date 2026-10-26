@@ -39,7 +39,6 @@ r_dir_file(hal_power_default, input_device)
 # Allow directory search for specific sysfs paths
 allow hal_power_default {
   vendor_sysfs_devfreq
-  sysfs_msm_subsys
   sysfs_thermal
 }:dir search;
 
