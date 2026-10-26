@@ -118,7 +118,23 @@ public class TouchSamplingService extends Service {
 
     private void startAppMonitoring() {
         stopAppMonitoring(); // Stop any existing monitoring
-        
+
+        SharedPreferences sharedPref = getSharedPreferences(
+                TouchSamplingSettingsFragment.SHAREDHTSR, Context.MODE_PRIVATE);
+        boolean globalHtsrEnabled = sharedPref.getBoolean(
+                TouchSamplingSettingsFragment.HTSR_STATE, false);
+        Set<String> enabledApps = TouchSamplingUtils.getPerAppHtsrEnabledApps(this);
+
+        if (globalHtsrEnabled) {
+            TouchSamplingUtils.writeTouchSamplingState(1);
+            return;
+        }
+
+        if (enabledApps.isEmpty()) {
+            TouchSamplingUtils.writeTouchSamplingState(0);
+            return;
+        }
+
         mAppCheckRunnable = new Runnable() {
             @Override
             public void run() {
@@ -126,7 +142,7 @@ public class TouchSamplingService extends Service {
                 mHandler.postDelayed(this, CHECK_INTERVAL);
             }
         };
-        
+
         mHandler.post(mAppCheckRunnable);
     }
 
