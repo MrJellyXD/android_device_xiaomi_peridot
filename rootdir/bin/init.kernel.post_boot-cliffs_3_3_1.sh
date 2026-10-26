@@ -227,7 +227,7 @@ do
 	echo 6000 > $qosprimelatflr/ipm_ceil
 done
 
-echo s2idle > /sys/power/mem_sleep
+echo deep > /sys/power/mem_sleep
 
 echo N > /sys/devices/system/cpu/qcom_lpm/parameters/sleep_disabled
 
