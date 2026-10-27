@@ -23,6 +23,12 @@ $(call inherit-product, packages/modules/Virtualization/apex/product_packages.mk
 $(call soong_config_set,rfs,mpss_firmware_symlink_target,modem_firmware)
 $(call inherit-product, hardware/qcom-caf/common/common.mk)
 
+# Platform
+TARGET_BOARD_PLATFORM := pineapple
+
+# Reduce system server verbosity
+PRODUCT_SYSTEM_SERVER_DEBUG_INFO := false
+
 # A/B
 AB_OTA_POSTINSTALL_CONFIG += \
     RUN_POSTINSTALL_system=true \
@@ -265,6 +271,40 @@ $(call soong_config_set,lineage_health,fast_charge_value_super_fast_charge,2)
 PRODUCT_PACKAGES += \
     XiaomiParts
 
+# Dexopt
+PRODUCT_SYSTEM_PROPERTIES += \
+    pm.dexopt.post-boot=speed \
+    pm.dexopt.first-boot=speed \
+    pm.dexopt.boot-after-ota=speed-profile \
+    pm.dexopt.boot-after-mainline-update=speed \
+    pm.dexopt.install=speed-profile \
+    pm.dexopt.install-fast=speed \
+    pm.dexopt.install-bulk=speed-profile \
+    pm.dexopt.install-bulk-secondary=speed \
+    pm.dexopt.install-bulk-downgraded=speed \
+    pm.dexopt.install-bulk-secondary-downgraded=speed \
+    pm.dexopt.bg-dexopt=speed-profile \
+    pm.dexopt.ab-ota=speed-profile \
+    pm.dexopt.inactive=inactive \
+    pm.dexopt.cmdline=speed \
+    pm.dexopt.first-use=speed-profile \
+    pm.dexopt.secondary=speed-profile \
+    pm.dexopt.shared=speed
+
+# DEX Preopt configurations
+$(call add-product-dex-preopt-module-config,services,--compiler-filter=speed)
+$(call add-product-dex-preopt-module-config,wifi-service,--compiler-filter=speed)
+$(call add-product-dex-preopt-module-config,framework,--compiler-filter=speed-profile)
+
+PRODUCT_DEX_PREOPT_DEFAULT_COMPILER_FILTER := speed
+OVERRIDE_DISABLE_DEXOPT_ALL := false
+
+# ART Debug Stuff
+ART_BUILD_TARGET_NDEBUG := true
+ART_BUILD_TARGET_DEBUG := false
+ART_BUILD_HOST_NDEBUG := true
+ART_BUILD_HOST_DEBUG := false
+
 # Logging
 SPAMMY_LOG_TAGS := \
     AiAiEcho \
@@ -367,6 +407,9 @@ PRODUCT_COPY_FILES += \
 PRODUCT_PACKAGES += \
     vendor.qti.qspa-service \
     qspa_vendor.rc
+
+# Speed profile services and wifi-service to reduce RAM and storage.
+PRODUCT_SYSTEM_SERVER_COMPILER_FILTER := speed-profile
 
 # SKU
 PRODUCT_COPY_FILES += \
