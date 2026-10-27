@@ -127,12 +127,12 @@ if [ -d /proc/sys/walt ]; then
 	echo 0 > /proc/sys/walt/sched_boost
 
 	# Game Sched Tuning
-	echo "UnityMain,libunity.so,libil2cpp.so,libxlua.so,libUE4.so,libUnreal.so,libAlienIsolation.so,libTombRaider.so" > /proc/sys/walt/sched_lib_name
-	echo 248 > /proc/sys/walt/sched_lib_mask_force
+	echo "UnityMain,libunity.so,libil2cpp.so,com.miHoYo.,com.pubg.imobile,com.pubg.,com.activision.,com.feralinteractive.tombraider_android.,com.kurogame.wutheringwaves.global.,com.carxtech.sr." > /proc/sys/walt/sched_lib_name
+	echo 255 > /proc/sys/walt/sched_lib_mask_force
 
 	# configure input boost settings
-	echo 787200 0 0 0 0 0 0 0 > /proc/sys/walt/input_boost/input_boost_freq
-	echo 0 > /proc/sys/walt/input_boost/input_boost_ms
+	echo 1113600 0 0 0 0 0 0 0 > /proc/sys/walt/input_boost/input_boost_freq
+	echo 120 > /proc/sys/walt/input_boost/input_boost_ms
 
 	echo "walt" > /sys/devices/system/cpu/cpufreq/policy0/scaling_governor
 	echo "walt" > /sys/devices/system/cpu/cpufreq/policy3/scaling_governor
@@ -249,7 +249,7 @@ do
 	echo 6000 > $qosprimelatflr/ipm_ceil
 done
 
-echo deep > /sys/power/mem_sleep
+echo s2idle > /sys/power/mem_sleep
 
 echo N > /sys/devices/system/cpu/qcom_lpm/parameters/sleep_disabled
 
