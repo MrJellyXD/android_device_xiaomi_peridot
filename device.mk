@@ -499,3 +499,7 @@ $(call inherit-product-if-exists, device/xiaomi/peridot-miuicamera/device.mk)
 
 # NotGameTurbo
 $(call inherit-product-if-exists, packages/apps/NotGameTurbo/notgameturbo.mk)
+
+# Enable whole-program R8 Java optimizations for SystemUI and system_server
+SYSTEM_OPTIMIZE_JAVA := true
+SYSTEMUI_OPTIMIZE_JAVA := true
