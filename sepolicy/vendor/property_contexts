@@ -67,6 +67,10 @@ ro.vendor.display.ltpo.idle.switch.powercloud u:object_r:vendor_displayfeature_p
 ro.vendor.display.ltpo.powerfull.with.charger.support u:object_r:vendor_displayfeature_prop:s0
 ro.vendor.display.ltpo.sync.tp u:object_r:vendor_displayfeature_prop:s0
 ro.vendor.display.ltpo.tp.idle.lowbrightness.support u:object_r:vendor_displayfeature_prop:s0
+
+# Charging
+persist.vendor.charge.mode  u:object_r:vendor_charge_mode_prop:s0 exact int
+vendor.charging.thermald    u:object_r:vendor_charging_thermald_prop:s0 exact string
 ro.vendor.display.mi_calib.enable u:object_r:vendor_displayfeature_prop:s0
 ro.vendor.display.mode_change_optimize.enable u:object_r:vendor_displayfeature_prop:s0
 ro.vendor.display.nature_mode.enable u:object_r:vendor_displayfeature_prop:s0

@@ -16,8 +16,6 @@
 
 package org.lineageos.settings.charge;
 
-import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -26,15 +24,14 @@ import androidx.preference.ListPreference;
 import androidx.preference.Preference;
 import androidx.preference.SwitchPreferenceCompat;
 import com.android.settingslib.widget.SettingsBasePreferenceFragment;
-import androidx.preference.PreferenceManager;
 
 import org.lineageos.settings.R;
 
 /**
  * Lets the user pick a charge mode directly, instead of only being able to
- * cycle through OK -> COOL -> NUKE via the QS tile. Reads/writes the same
- * SharedPreferences key the tile uses, and drives the same enforcement
- * service, so both stay in sync no matter which one was used last.
+ * cycle through OK -> COOL -> NUKE via the QS tile. Both go through
+ * ChargeModeUtils (a system property the native charging daemon reads), so
+ * they stay in sync no matter which one was used last.
  *
  * Also hosts the bypass-charging switch. That node is asynchronous on the
  * kernel side (~5s, see BypassChargingUtils/the sysfs ABI doc), so the
@@ -45,15 +42,15 @@ import org.lineageos.settings.R;
 public class ChargeSettingsFragment extends SettingsBasePreferenceFragment
         implements Preference.OnPreferenceChangeListener {
 
-    // Must match ChargeTileService.PREF_KEY
-    private static final String PREF_KEY = "saved_charge_mode";
     private static final String CHARGE_MODE_PREF = "charge_mode_pref";
     private static final String BYPASS_CHARGING_PREF = "bypass_charging_pref";
+    private static final String BYPASS_MODE_PREF = "bypass_mode_pref";
     private static final long BYPASS_POLL_INTERVAL_MS = 250L;
     private static final long BYPASS_POLL_TIMEOUT_MS = 8000L; // headroom over the ~5s kernel sequence
 
     private ListPreference mChargeModePref;
     private SwitchPreferenceCompat mBypassChargingPref;
+    private ListPreference mBypassModePref;
     private final Handler mHandler = new Handler(Looper.getMainLooper());
     private long mBypassPollDeadline;
 
@@ -62,13 +59,16 @@ public class ChargeSettingsFragment extends SettingsBasePreferenceFragment
         addPreferencesFromResource(R.xml.charge_settings);
 
         mChargeModePref = (ListPreference) findPreference(CHARGE_MODE_PREF);
-        int savedIndex = getPrefs().getInt(PREF_KEY, 0);
+        int savedIndex = ChargeModeUtils.getMode();
         mChargeModePref.setValue(String.valueOf(savedIndex));
         updateSummary(savedIndex);
         mChargeModePref.setOnPreferenceChangeListener(this);
 
         mBypassChargingPref = (SwitchPreferenceCompat) findPreference(BYPASS_CHARGING_PREF);
         mBypassChargingPref.setOnPreferenceChangeListener(this);
+
+        mBypassModePref = (ListPreference) findPreference(BYPASS_MODE_PREF);
+        mBypassModePref.setOnPreferenceChangeListener(this);
     }
 
     @Override
@@ -87,17 +87,18 @@ public class ChargeSettingsFragment extends SettingsBasePreferenceFragment
     public boolean onPreferenceChange(Preference preference, Object newValue) {
         if (CHARGE_MODE_PREF.equals(preference.getKey())) {
             int index = Integer.parseInt((String) newValue);
-            getPrefs().edit().putInt(PREF_KEY, index).apply();
+            ChargeModeUtils.setMode(index);
             updateSummary(index);
+            return true;
+        }
 
-            // Mirror ChargeTileService.onClick(): start/stop the enforcement
-            // service based on the newly selected mode.
-            Intent intent = new Intent(getActivity(), ChargeEnforcementService.class);
-            if (index > 0) {
-                getActivity().startService(intent);
-            } else {
-                getActivity().stopService(intent);
+        if (BYPASS_MODE_PREF.equals(preference.getKey())) {
+            String mode = (String) newValue;
+            if (!BypassChargingUtils.writeMode(mode)) {
+                return false;
             }
+            BypassChargingUtils.saveMode(requireContext(), mode);
+            updateBypassModeSummary(mode, false);
             return true;
         }
 
@@ -141,6 +142,7 @@ public class ChargeSettingsFragment extends SettingsBasePreferenceFragment
 
     private void applyBypassChargingState(BypassChargingUtils.State state) {
         mBypassChargingPref.setChecked(BypassChargingUtils.isOn(state));
+        refreshBypassMode(state);
         switch (state) {
             case ON:
                 mBypassChargingPref.setSummary(R.string.bypass_charging_summary_on);
@@ -160,14 +162,39 @@ public class ChargeSettingsFragment extends SettingsBasePreferenceFragment
         }
     }
 
+    /**
+     * Mirrors the kernel's selected mode into the list. The picker is locked
+     * while bypass is on or switching: the kernel keeps the scene it engaged
+     * with, so changing the selection mid-session would show a mode that
+     * isn't the one actually running.
+     */
+    private void refreshBypassMode(BypassChargingUtils.State state) {
+        String mode = BypassChargingUtils.readMode();
+        if (mode == null || state == BypassChargingUtils.State.UNAVAILABLE) {
+            mBypassModePref.setEnabled(false);
+            return;
+        }
+        mBypassModePref.setValue(mode);
+        boolean locked = BypassChargingUtils.isOn(state) || BypassChargingUtils.isPending(state);
+        mBypassModePref.setEnabled(!locked);
+        updateBypassModeSummary(mode, locked);
+    }
+
+    private void updateBypassModeSummary(String mode, boolean locked) {
+        int index = mBypassModePref.findIndexOfValue(mode);
+        if (index < 0) {
+            return;
+        }
+        CharSequence label = mBypassModePref.getEntries()[index];
+        mBypassModePref.setSummary(locked
+                ? getString(R.string.bypass_mode_locked, label)
+                : label);
+    }
+
     private void updateSummary(int index) {
         CharSequence[] entries = mChargeModePref.getEntries();
         if (index >= 0 && index < entries.length) {
             mChargeModePref.setSummary(entries[index]);
         }
-    }
-
-    private SharedPreferences getPrefs() {
-        return PreferenceManager.getDefaultSharedPreferences(getActivity());
     }
 }
