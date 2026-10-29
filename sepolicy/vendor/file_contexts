@@ -108,3 +108,7 @@
 /sys/class/kgsl/kgsl-3d0/max_gpuclk u:object_r:vendor_sysfs_kgsl_max_gpuclk:s0
 /sys/devices/platform/soc/3d00000\.qcom,kgsl-3d0/kgsl/kgsl-3d0/max_gpuclk u:object_r:vendor_sysfs_kgsl_max_gpuclk:s0
 
+# Charging
+/(vendor|system/vendor)/bin/charging u:object_r:charging_exec:s0
+
+
