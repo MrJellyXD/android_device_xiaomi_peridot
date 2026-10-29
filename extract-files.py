@@ -88,6 +88,10 @@ lib_fixups: lib_fixups_user_type = {
 }
 
 blob_fixups: blob_fixups_user_type = {
+    'vendor/etc/seccomp_policy/atfwd@2.0.policy': blob_fixup()
+        .regex_replace(r'(?m)^gettid:\s*1\s*$', 'gettid: 1\nlseek: 1'),
+    'vendor/etc/seccomp_policy/qesdksec.policy': blob_fixup()
+        .regex_replace(r'(?m)^setpriority:\s*1\s*$', 'setpriority: 1\nlseek: 1'),
     'system/framework/WfdCommon.jar': blob_fixup()
         .apktool_patch('blob-patches/WfdCommon.patch'),
     'system_ext/etc/init/qspa_system.rc': blob_fixup()
@@ -322,6 +326,16 @@ blob_fixups: blob_fixups_user_type = {
         .replace_needed(
             'libaudioroute.so',
             'libaudioroute-v34.so'
+    ),
+    'vendor/etc/init/nicmd.rc': blob_fixup()
+        .regex_replace(
+            r'(service\s+vendor\.nicmd\s+/system/vendor/bin/nicmd\s*\n\s*class\s+main)',
+            r'\1\n    user root\n    group root'
+    ),
+    'vendor/etc/init/vendor.dpmd.rc': blob_fixup()
+        .regex_replace(
+            r'(service\s+vendor\.dpmd\s+/vendor/bin/vendor\.dpmd\s*\n)',
+            r'\1    user root\n'
     ),
     'vendor/etc/clstc_config_library.xml': blob_fixup()
         .regex_replace(r'<library>\s*<name>libdolbyclstc[\s\S]*?</library>', ''),
